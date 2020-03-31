@@ -16,3 +16,13 @@ We don’t have time to discuss Github in this class, but if you’re ever
 interested, you will find plenty of introductions to Github and the
 combination with RStudio, for example [this
 one](https://r-bio.github.io/intro-git-rstudio/).
+
+Your first view of this document is as a web page. If you click on the
+“View on Github” button above, you’ll see the regular Github view,
+which shows you all the other files in the project.
+
+## Working with Twitter data
+
+The most important thing here is the PDF document showing the steps we
+need to take to first harvest and then analyze tweets. You can download
+the PDF [here](analyzing_twitter_data.pdf).
