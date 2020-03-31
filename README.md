@@ -25,4 +25,9 @@ which shows you all the other files in the project.
 
 The most important thing here is the PDF document showing the steps we
 need to take to first harvest and then analyze tweets. You can download
-the PDF [here](analyzing_twitter_data.pdf).
+the PDF
+[here](analyzing_twitter_data.pdf).
+
+<iframe src="https://wordsmith189.github.io/analyzing_tweets/analyzing_twitter_data.pdf" width="1000px" height="800px"></iframe>
+
+</iframe>
