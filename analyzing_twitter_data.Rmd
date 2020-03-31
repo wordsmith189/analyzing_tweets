@@ -1,0 +1,23 @@
+---
+title: "Collecting Twitter Data and Analyzing it as Text"
+subtitle: "A step-by-step introduction"
+author: "Lars Hinrichs"
+date: "`r Sys.Date()`"
+output: 
+  tint::tintPdf:
+    toc: true
+---
+
+# Collecting tweets
+
+## Setting up a Twitter app
+
+## Collecting tweets ("harvesting")
+
+# Analyzing tweets
+
+## Tidy format
+
+## Wordclouds
+
+## Sentiment analysis
