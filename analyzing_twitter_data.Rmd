@@ -219,7 +219,7 @@ df_us %>%
 
 We can use the familiar steps from the `tidytext` tutorial to get and visualize sentiments for the two datasets.
 
-```{r}
+```{r echo=T, results='hide'}
 df_uk <- df %>% 
   filter(country == "United Kingdom") %>% 
   select(text) %>% 
