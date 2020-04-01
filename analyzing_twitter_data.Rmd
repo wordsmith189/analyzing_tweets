@@ -3,21 +3,240 @@ title: "Collecting Twitter Data and Analyzing it as Text"
 subtitle: "A step-by-step introduction"
 author: "Lars Hinrichs"
 date: "`r Sys.Date()`"
-output: 
-  tint::tintPdf:
+output:
+  tint::tintHtml:
     toc: true
 ---
 
+# Introduction
+
+Collecting and analyzing tweets, all within R, has been getting much, much easier in the last couple of years. We now have the package `rtweet` and it makes all the difference. I won't go in detail here about all the improvements this package offers compared to earlier packages, but its authors mention a few on the [package website](https://rtweet.info/). 
+
+
+
+Let's get to it!
+
+
+
 # Collecting tweets
 
-## Setting up a Twitter app
+## Before we get started
 
-## Collecting tweets ("harvesting")
+You will need your own personal **Twitter account with a user name and password**.
+
+## Load packages
+
+Let's start with some packages that we'll need.`
+
+```{r}
+if (!require(pacman)) library(pacman)
+p_load(rtweet, tidyverse, rio, janitor, tidytext)
+```
+
+
+## Collect tweets ("harvesting")
+
+The core function of `rtweet` is `search_tweets()`. All of its arguments are described in the help manual and on [this page](https://rtweet.info/reference/search_tweets.html). Using that information, let us clobber together an initial search. First, we'll define a keyword to search for.
+
+```{r}
+q = "virus" 
+```
+
+We can now use this keyword as an argument to `search_tweets()`. Notice that I am setting the `include_rts` argument to `FALSE` because I want only original tweets, no retweets, among my results. In addition, I am piping the results I am getting into a call to `select()` so that I'll see the text of each tweet and the writer's screen name, but none of the other information that also gets collected.
+
+```{r eval=FALSE}
+search_tweets(
+  q,
+  n = 70,
+  include_rts = FALSE
+  ) %>%
+  select(text, screen_name)
+```
+
+That was just a search to see how `rtweet` works - we did not store any data in a variable yet. 
+
+Let us try to set up a serious search. Why don't we compare the way that "virus" is being talked about in the US and in the UK? (Our machinery is tuned to English-language material, that is why I am sticking with English-speaking locales.)
+
+And we'll also re-use `q`, our query, which is "virus". Running our search then, we should be sure to give the resulting data a variable name so that we can analyze it later. - I will ask for a total of 10,000 tweets.
+
+```{r eval=FALSE}
+
+mytweets <- search_tweets(
+  q,
+  n = 10000,
+  include_rts = FALSE
+  ) 
+```
+
+Let's ask how many rows are in our resulting dataset - in other words, how many tweets we got:
+
+```{r eval=TRUE, echo=FALSE}
+mytweets <- import("mytweets.csv")
+```
+
+```{r}
+mytweets %>% nrow()
+
+```
+
+
+So we do in fact get (about) 10,000 tweets. By using the geo-information contained in the data (it's in the format of an R dataframe), we can see how many tweets we got from the US and how many from the UK. 
+
+
+```{r}
+mytweets %>% 
+  tabyl(country) %>% 
+  select(1, 2) %>% 
+  arrange(-n) %>% 
+  head(10)
+```
+
+It looks like we are getting a fair number of tweets from the US and the UK. However, if we wanted a larger corpus of tweets for our study, we'd have to collect a lot more data. I won't do this here, as I am only showing how this method works, but I encourage you to put in the time to collect, let's say, 50,000 tweets. Here is how you would collect that many. Since there is a limit to how many you can download, we need to use the `retryonratelimit` argument (setting it to `TRUE`).
+
+```{r eval=FALSE}
+mytweets <- search_tweets(
+  q,
+  n = 50000,
+  retryonratelimit = TRUE,
+  include_rts = FALSE
+)
+```
+
+Once you're done collecting the larger amount of data, apply a few filters to be sure that all your data is relevant:
+
+- keep only tweets that were written in the UK and the US,
+- keep only tweets in English, and
+- remove duplicates, since some tweets will have been harvested twice.
+
+```{r echo=T, results='hide'}
+df <- mytweets %>% 
+  filter(country %in% c("United Kingdom", "United States"),
+         lang == "en") %>% 
+  unique()
+df %>% 
+  select(text, country) %>% 
+  head()
+  
+```
+
 
 # Analyzing tweets
 
 ## Tidy format
 
+For our further analyses we will want our data to be in the "tidy" format with one word per line. Let's get that set up using the familiar steps from `tidytext`. 
+
+Since this step drops all of the other columns in the data, now would be a good time to split the data into the British and the American part. So that is what we'll do first: we'll create two separate datasets for the two locales.
+
+```{r echo=T, results='hide'}
+df_uk <- df %>% 
+  filter(country == "United Kingdom")
+
+df_us <- df %>% 
+  filter(country == "United States")
+
+rbind(head(df_uk, 4), head(df_us, 4)) %>% select(text)
+
+```
+
+And now we will process both datasets with the usual steps from `tidytext`.
+
+```{r echo=T, results='hide'}
+
+df_uk <- df_uk %>% 
+  select(text) %>% 
+  unnest_tokens(output = word,
+                input = text,
+                token = "words") %>%
+  anti_join(stop_words, by = "word")
+
+df_us <- df_us %>% 
+  select(text) %>% 
+  unnest_tokens(output = word,
+                input = text,
+                token = "words") %>%
+  anti_join(stop_words, by = "word")
+
+rbind(head(df_uk, 10), head(df_us, 10)) %>% select(word)
+
+```
+
+
 ## Wordclouds
 
+Our data is now prepared and ready to be visualized. To make our two wordclouds, let us load another package.
+```{r}
+p_load(wordcloud2)
+```
+
+And now, we will generate a count of word frequencies, which will be passed to the `wordcloud` function. Let's start with the UK. Before we make the wordcloud, let's take a look at what the frequency table looks like.
+```{r}
+df_uk %>%   
+  count(word, name = "freq") %>% 
+  arrange(-freq) %>% 
+  head(20)
+```
+
+So we'll be passing simple words and their frequencies to `wordcloud2`. Here is what we get:
+
+```{r}
+df_uk %>%   
+  count(word, name = "freq") %>% 
+  arrange(-freq) %>% 
+  wordcloud2(size = 1,
+             ellipticity = 1,
+             rotateRatio = 0
+  )
+```
+
+It is perhaps a bit unnecessary that "virus" is so big in the middle there, since that was our search term. What we are really interested in is which words **co-occur** with "virus". So let us just take that word out by adding a `filter()`.
+```{r eval=FALSE}
+df_uk %>%   
+  filter(word != "virus") %>% 
+  count(word, name = "freq") %>% 
+  arrange(-freq) %>% 
+  wordcloud2(size = 1,
+             ellipticity = 1,
+             rotateRatio = 0
+  )
+```
+
+Nice - now we'll use the same code for the US data.
+
+```{r eval=FALSE}
+df_us %>%   
+  filter(word != "virus") %>% 
+  count(word, name = "freq") %>% 
+  arrange(-freq) %>% 
+  wordcloud2(size = 1,
+             ellipticity = 1,
+             rotateRatio = 0
+  )
+```
+
+
 ## Sentiment analysis
+
+We can use the familiar steps from the `tidytext` tutorial to get and visualize sentiments for the two datasets.
+
+```{r}
+df_uk <- df %>% 
+  filter(country == "United Kingdom") %>% 
+  select(text) %>% 
+  unnest_tokens(output = word,
+                input = text,
+                token = "words") %>%
+  anti_join(stop_words, by = "word") %>% 
+  filter(word != "virus")
+
+sentiment_uk <- 
+  df_uk %>% inner_join(get_sentiments("bing")) %>%
+  count(index = row_number() %/% 80, sentiment) %>%
+  spread(sentiment, n, fill = 0) %>%
+  mutate(sentiment = positive - negative)
+```
+
+We have created a result - and it is stored in the new object "sentiment_uk". Go ahead and call the object from the command line to see what's in it.
+
+You can adapt these last steps to obtain, for comparison, the sentiment of the US corpus.
+
