@@ -22,11 +22,11 @@ which shows you all the other files in the project.
 
 ## Working with Twitter data
 
-The most important thing here is the PDF document showing the steps we
-need to take to first harvest and then analyze tweets. You can download
-the PDF [here](analyzing_twitter_data.pdf).
+The most important thing here is the tutorial showing the steps we need
+to take to first harvest and then analyze tweets. You can view the
+document [here](analyzing_twitter_data.html).
 
 -----
 
-[Lars Hinrichs](larshinrichs.site) | Université de Paris 3 | 31 March
+[Lars Hinrichs](larshinrichs.site) | Université de Paris 3 | 01 April
 2020

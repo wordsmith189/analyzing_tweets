@@ -17,7 +17,7 @@ Your first view of this document is as a web page. If you click on the "View on 
 
 ## Working with Twitter data
 
-The most important thing here is the PDF document showing the steps we need to take to first harvest and then analyze tweets. You can download the PDF [here](analyzing_twitter_data.pdf).
+The most important thing here is the tutorial showing the steps we need to take to first harvest and then analyze tweets. You can view the document [here](analyzing_twitter_data.html).
 
 ---
 [Lars Hinrichs](larshinrichs.site) | Université de Paris 3 | `r format(Sys.Date(), format = "%d %B %Y")`
